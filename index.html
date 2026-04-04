@@ -1,90 +1,92 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Outlets</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <nav>
-    <span class="head">HMC Society of Fake Outlets</span>
-  </nav>
-  <div style="display: flex; align-items: center; gap: 1rem;">
-    <img src="ac-transparent.gif" alt="Spinning Outlet" style="width: 30vw; max-width: 30vw; margin-left: 10rem;">
-    <div class="side-text">
-      <p>Welcome</p>
-      <p>To the HMC</p>
-      <p>Society of Fake Outlets!</p>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Outlets</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <nav>
+      <span class="head">HMC Society of Fake Outlets</span>
+    </nav>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <img src="ac-transparent.gif" alt="Spinning Outlet" style="width: 30vw; max-width: 30vw; margin-left: 10rem;">
+      <div class="side-text">
+        <p>Welcome</p>
+        <p>To the HMC</p>
+        <p>Society of Fake Outlets!</p>
+      </div>
     </div>
-  </div>
-  <hr class="solid">
-
-  <div class="chat-container">
-    <div id="chat-box"></div>
-    <div class="chat-input-row">
-      <input id="chat-name" type="text" placeholder="Your name" />
-      <input id="chat-input" type="text" placeholder="Type a message..." />
-      <button id="chat-send">Send</button>
+    <hr class="solid">
+    <div class="chat-container">
+      <div id="chat-box"></div>
+      <div class="chat-input-row">
+        <input id="chat-name" type="text" placeholder="Your name" />
+        <input id="chat-input" type="text" placeholder="Type a message..." />
+        <button id="chat-send">Send</button>
+      </div>
     </div>
-  </div>
+    <footer>
+      <span>"HMC Society of Fake Outlets" is not affiliated with Harvey Mudd College. <br> This is a parody, we tried to make this website not infringe on any patents :) </span>
+    </footer>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+      import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
-  <footer>
-    <span>"HMC Society of Fake Outlets" is not affiliated with Harvey Mudd College. <br> This is a parody, we tried to make this website not infringe on any patents :) </span>
-  </footer>
+      const firebaseConfig = {
+        apiKey: "AIzaSyAunzgEaURiNsGBM3qzr3HZodlsZhTc51k",
+        authDomain: "outletshmc.firebaseapp.com",
+        projectId: "outletshmc",
+        storageBucket: "outletshmc.firebasestorage.app",
+        messagingSenderId: "791453841631",
+        appId: "1:791453841631:web:b6eca0457a46de1ba7d16a"
+      };
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      const chatBox = document.getElementById("chat-box");
+      const chatInput = document.getElementById("chat-input");
+      const chatName = document.getElementById("chat-name");
+      const chatSend = document.getElementById("chat-send");
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAunzgEaURiNsGBM3qzr3HZodlsZhTc51k",
-      authDomain: "outletshmc.firebaseapp.com",
-      projectId: "outletshmc",
-      storageBucket: "outletshmc.firebasestorage.app",
-      messagingSenderId: "791453841631",
-      appId: "1:791453841631:web:b6eca0457a46de1ba7d16a"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    const chatBox = document.getElementById("chat-box");
-    const chatInput = document.getElementById("chat-input");
-    const chatName = document.getElementById("chat-name");
-    const chatSend = document.getElementById("chat-send");
-
-    // Listen for new messages in real time
-    const q = query(collection(db, "messages"), orderBy("timestamp"));
-    onSnapshot(q, (snapshot) => {
-      chatBox.innerHTML = "";
-      snapshot.forEach((doc) => {
-        const msg = doc.data();
-        const el = document.createElement("div");
-        el.className = "chat-message";
-        el.innerHTML = `<strong>${msg.name}:</strong> ${msg.text}`;
-        chatBox.appendChild(el);
+      // Listen for new messages in real time
+      const q = query(collection(db, "messages"), orderBy("timestamp"));
+      onSnapshot(q, (snapshot) => {
+        chatBox.innerHTML = "";
+        snapshot.forEach((doc) => {
+          const msg = doc.data();
+          const el = document.createElement("div");
+          el.className = "chat-message";
+          el.innerHTML = `<strong>${msg.name}:</strong> ${msg.text}`;
+          chatBox.appendChild(el);
+        });
+        chatBox.scrollTop = chatBox.scrollHeight;
       });
-      chatBox.scrollTop = chatBox.scrollHeight;
-    });
 
-    // Send a message
-    chatSend.addEventListener("click", async () => {
-      const text = chatInput.value.trim();
-      const name = chatName.value.trim() || "Anonymous";
-      if (!text) return;
-      await addDoc(collection(db, "messages"), {
-        name,
-        text,
-        timestamp: serverTimestamp()
+      // Send a message
+      chatSend.addEventListener("click", async () => {
+        const text = chatInput.value.trim();
+        const name = chatName.value.trim() || "Anonymous";
+        console.log("Send clicked, text:", text, "name:", name);
+        if (!text) return;
+        try {
+          const docRef = await addDoc(collection(db, "messages"), {
+            name,
+            text,
+            timestamp: serverTimestamp()
+          });
+          console.log("Message saved with ID:", docRef.id);
+        } catch (e) {
+          console.error("Error saving message:", e);
+        }
+        chatInput.value = "";
       });
-      chatInput.value = "";
-    });
 
-    // Also send on Enter key
-    chatInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") chatSend.click();
-    });
-  </script>
-</body>
+      // Also send on Enter key
+      chatInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") chatSend.click();
+      });
+    </script>
+  </body>
 </html>
