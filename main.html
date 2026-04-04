@@ -18,12 +18,73 @@
       <p>Society of Fake Outlets!</p>
     </div>
   </div>
-  <hr>
-  <div class="text">
-    <p> If you have found an outlet, you may keep it, put it up somewhere else or destroy it if you want </p>
+  <hr class="solid">
+
+  <div class="chat-container">
+    <div id="chat-box"></div>
+    <div class="chat-input-row">
+      <input id="chat-name" type="text" placeholder="Your name" />
+      <input id="chat-input" type="text" placeholder="Type a message..." />
+      <button id="chat-send">Send</button>
+    </div>
   </div>
+
   <footer>
     <span>"HMC Society of Fake Outlets" is not affiliated with Harvey Mudd College. <br> This is a parody, we tried to make this website not infringe on any patents :) </span>
   </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAunzgEaURiNsGBM3qzr3HZodlsZhTc51k",
+      authDomain: "outletshmc.firebaseapp.com",
+      projectId: "outletshmc",
+      storageBucket: "outletshmc.firebasestorage.app",
+      messagingSenderId: "791453841631",
+      appId: "1:791453841631:web:b6eca0457a46de1ba7d16a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const chatBox = document.getElementById("chat-box");
+    const chatInput = document.getElementById("chat-input");
+    const chatName = document.getElementById("chat-name");
+    const chatSend = document.getElementById("chat-send");
+
+    // Listen for new messages in real time
+    const q = query(collection(db, "messages"), orderBy("timestamp"));
+    onSnapshot(q, (snapshot) => {
+      chatBox.innerHTML = "";
+      snapshot.forEach((doc) => {
+        const msg = doc.data();
+        const el = document.createElement("div");
+        el.className = "chat-message";
+        el.innerHTML = `<strong>${msg.name}:</strong> ${msg.text}`;
+        chatBox.appendChild(el);
+      });
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+
+    // Send a message
+    chatSend.addEventListener("click", async () => {
+      const text = chatInput.value.trim();
+      const name = chatName.value.trim() || "Anonymous";
+      if (!text) return;
+      await addDoc(collection(db, "messages"), {
+        name,
+        text,
+        timestamp: serverTimestamp()
+      });
+      chatInput.value = "";
+    });
+
+    // Also send on Enter key
+    chatInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") chatSend.click();
+    });
+  </script>
 </body>
 </html>
